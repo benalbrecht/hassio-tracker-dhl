@@ -33,6 +33,7 @@ SERVICE_UNREGISTER = "unregister"
 
 # Get at https://developer.dhl.com/
 ATTR_API_KEY = "api_key"
+ATTR_POSTAL_CODE = "postal_code"
 
 ICON = "mdi:package-variant-closed"
 SCAN_INTERVAL = timedelta(seconds=1800)
@@ -40,6 +41,7 @@ SCAN_INTERVAL = timedelta(seconds=1800)
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(ATTR_API_KEY): cv.string,
+        vol.Required(ATTR_POSTAL_CODE): cv.string,
     }
 )
 
@@ -53,7 +55,7 @@ SUBSCRIPTION_SCHEMA = vol.All(
 
 ENTITY_ID_FORMAT = DOMAIN + ".{}"
 
-DHL_API_track_shipments_URL = "https://api-eu.dhl.com/track/shipments?language=en&trackingNumber={}"
+DHL_API_track_shipments_URL = "https://api-eu.dhl.com/track/shipments?language=de&recipientPostalCode={}&trackingNumber={}"
 
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
