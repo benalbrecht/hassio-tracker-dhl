@@ -73,6 +73,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     registrations = _load_config(json_path)
 
     api_key = config.get(ATTR_API_KEY)
+    postal_code = config.get(ATTR_POSTAL_CODE)
 
     async def async_service_register(service):
         """Handle package registration."""
@@ -86,7 +87,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         await hass.async_add_job(save_json, json_path, registrations)
 
         return await component.async_add_entities([
-            DHLSensor(hass, package_id, api_key, update_interval)])
+            DHLSensor(hass, package_id, api_key, postal_code, update_interval)])
 
     hass.services.async_register(
         DOMAIN,
@@ -117,7 +118,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     if registrations is None:
         return None
 
-    return await component.async_add_entities([DHLSensor(hass, package_id, api_key, update_interval) for package_id in registrations], False)
+    return await component.async_add_entities([DHLSensor(hass, package_id, api_key, postal_code, update_interval) for package_id in registrations], False)
 
 
 def _load_config(filename):
@@ -132,11 +133,12 @@ def _load_config(filename):
 class DHLSensor(RestoreEntity):
     """DHL Sensor."""
 
-    def __init__(self, hass, package_id, api_key, update_interval):
+    def __init__(self, hass, package_id, api_key, postal_code, update_interval):
         """Initialize the sensor."""
         self.hass = hass
         self._package_id = package_id
         self._api_key = api_key
+        self._postal_code = postal_code
         self._attributes = None
         self._state = None
         self._data = None
@@ -170,7 +172,7 @@ class DHLSensor(RestoreEntity):
     def _update(self):
         """Update sensor state."""
         response = requests.get(
-                DHL_API_track_shipments_URL.format(self._package_id),
+                DHL_API_track_shipments_URL.format(self._postal_code, self._package_id),
                 headers = {
                     'Accept': 'application/json',
                     'DHL-API-Key': self._api_key,
